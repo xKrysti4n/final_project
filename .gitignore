@@ -1,2 +1,2 @@
-#Ignore venv
-/backend/.venv
+backend/.venv
+backend/.vscode
