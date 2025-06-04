@@ -14,6 +14,7 @@ def get_client(max_attempts: int = 3, sleep_time: int = 3) -> Elasticsearch:
         try:
             client = Elasticsearch("http://localhost:9200")
             if client.ping():
+                logger.info("Getting Elasticsearch client")
                 return client
             else:
                 logger.warning(f"Elasticsearch is not responding ({attempt}/{max_attempts})")

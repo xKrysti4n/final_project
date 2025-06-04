@@ -5,8 +5,8 @@ INDEX_NAME = "job_dataset"
 synonyms_list = [
     "dev, developer, programista, software engineer, inżynier oprogramowania",
     "mgr, magister, master",
-    "junior, junior developer, początkujący",
-    "senior, senior developer, doświadczony",
+    "junior, początkujący",
+    "senior, doświadczony",
     "lead, team lead, lider zespołu",
     "hr, human resources, kadry",
     "qa, quality assurance, tester, testowanie",
@@ -73,7 +73,12 @@ ANALYZER = {
             },
             "job_location":{
                 "type": "text",
-                "analyzer": "standard"
+                "analyzer": "standard",
+                "fields": {
+                    "keyword": {
+                        "type": "keyword"
+                    }
+                }
             },
             "job_description":{
                 "type": "text",

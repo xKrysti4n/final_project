@@ -1,6 +1,6 @@
 from app.core.get_es_client import get_client
-from app.schemas.info import InfoResponse
 from fastapi import HTTPException
+from app.schemas.info import InfoResponse
 def get_info() -> InfoResponse:
     """
     Retrieve information about the Elasticsearch cluster.
@@ -13,5 +13,5 @@ def get_info() -> InfoResponse:
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error connecting to Elasticsearch: {str(e)}")
     info = client.info().body
-    return InfoResponse(info=info)
+    return InfoResponse(info_elastic=info)
 
