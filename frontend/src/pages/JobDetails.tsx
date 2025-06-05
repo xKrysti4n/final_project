@@ -1,68 +1,65 @@
-
-import React from 'react';
-import { useParams, Link } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, MapPin, Clock, DollarSign, Building, Users, Calendar, ExternalLink, Heart, Share2 } from 'lucide-react';
+import { config } from '@/config';
+import { jobsApi, type JobSource } from '@/services/api';
+
+
 
 const JobDetails = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
+  const [job, setJob] = useState<JobSource | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // Mock job data - w rzeczywistej aplikacji pobierałbyś to z backendu
-  const job = {
-    id: 1,
-    title: 'Senior Frontend Developer',
-    company: 'TechCorp',
-    location: 'Warszawa',
-    salary: '15,000 - 20,000 PLN',
-    type: 'Pełny etat',
-    remote: 'Hybrydowo',
-    posted: '2 dni temu',
-    logo: '🚀',
-    skills: ['React', 'TypeScript', 'Next.js', 'Tailwind CSS', 'Node.js'],
-    description: `
-      Szukamy doświadczonego Frontend Developera do naszego dynamicznego zespołu. 
-      
-      Będziesz odpowiedzialny za tworzenie nowoczesnych aplikacji webowych używając najnowszych technologii.
-      
-      Oferujemy:
-      • Konkurencyjne wynagrodzenie
-      • Elastyczne godziny pracy
-      • Praca hybrydowa
-      • Budżet na rozwój (5000 PLN rocznie)
-      • Prywatna opieka medyczna
-      • Multisport
-      • Nowoczesny sprzęt
-      
-      Wymagania:
-      • Min. 4 lata doświadczenia w React
-      • Bardzo dobra znajomość TypeScript
-      • Doświadczenie z Next.js
-      • Znajomość Tailwind CSS
-      • Znajomość Node.js mile widziana
-    `,
-    requirements: [
-      'Min. 4 lata doświadczenia w React',
-      'Bardzo dobra znajomość TypeScript',
-      'Doświadczenie z Next.js',
-      'Znajomość Tailwind CSS',
-      'Znajomość Node.js mile widziana',
-      'Umiejętność pracy w zespole',
-      'Komunikatywna znajomość języka angielskiego'
-    ],
-    benefits: [
-      'Konkurencyjne wynagrodzenie',
-      'Elastyczne godziny pracy',
-      'Praca hybrydowa',
-      'Budżet na rozwój (5000 PLN rocznie)',
-      'Prywatna opieka medyczna',
-      'Multisport',
-      'Nowoczesny sprzęt'
-    ],
-    companySize: '50-100 pracowników',
-    industry: 'Technologia'
-  };
+  useEffect(() => {
+    const fetchJobDetails = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        
+        const response = await jobsApi.getJobDetails(id);
+        if (!response.hits?.hits?.[0]?._source) {
+          throw new Error('Nie znaleziono szczegółów oferty');
+        }
+        setJob(response.hits.hits[0]._source);
+      } catch (err) {
+        console.error('Error fetching job details:', err);
+        setError('Nie udało się pobrać szczegółów oferty. Spróbuj ponownie później.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchJobDetails();
+  }, [id]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-xl text-gray-600">Ładowanie szczegółów oferty...</div>
+      </div>
+    );
+  }
+
+  if (error || !job) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center gap-4">
+        <div className="text-xl text-red-600">{error || 'Nie znaleziono oferty'}</div>
+        <Button 
+          onClick={() => navigate('/')}
+          className="bg-blue-600 hover:bg-blue-700"
+        >
+          <ArrowLeft className="w-4 h-4 mr-2" />
+          Powrót do listy ofert
+        </Button>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
@@ -93,7 +90,7 @@ const JobDetails = () => {
               {/* Company Logo */}
               <div className="flex-shrink-0">
                 <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center text-3xl shadow-lg">
-                  {job.logo}
+                  🏢
                 </div>
               </div>
 
@@ -101,11 +98,7 @@ const JobDetails = () => {
               <div className="flex-1">
                 <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4 mb-4">
                   <div>
-                    <h1 className="text-3xl font-bold text-gray-900 mb-2">{job.title}</h1>
-                    <div className="flex items-center gap-2 text-lg text-gray-600">
-                      <Building className="w-5 h-5" />
-                      <span className="font-medium">{job.company}</span>
-                    </div>
+                    <h1 className="text-3xl font-bold text-gray-900 mb-2">{job.job_title}</h1>
                   </div>
                   
                   <div className="flex gap-2">
@@ -121,44 +114,36 @@ const JobDetails = () => {
                 </div>
 
                 {/* Job Details */}
-                <div className="flex flex-wrap gap-6 text-gray-600 mb-6">
-                  <div className="flex items-center gap-2">
-                    <MapPin className="w-5 h-5" />
-                    <span>{job.location}</span>
-                    <Badge variant="outline" className="ml-1">
-                      {job.remote}
-                    </Badge>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                  <div className="flex items-center">
+                    <MapPin className="h-5 w-5 mr-2 text-gray-600" />
+                    <span>{job.job_location}</span>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <DollarSign className="w-5 h-5" />
-                    <span className="font-medium text-green-600 text-lg">{job.salary}</span>
+                  <div className="flex items-center">
+                    <Clock className="h-5 w-5 mr-2 text-gray-600" />
+                    <span>{new Date(job.posted_date).toLocaleDateString('pl-PL')}</span>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <Clock className="w-5 h-5" />
-                    <span>{job.posted}</span>
+                  <div className="flex items-center">
+                    <DollarSign className="h-5 w-5 mr-2 text-gray-600" />
+                    <span>{job.is_remote ? 'Zdalnie' : 'W biurze'}</span>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <Users className="w-5 h-5" />
-                    <span>{job.companySize}</span>
-                  </div>
-                </div>
-
-                {/* Skills */}
-                <div className="flex flex-wrap gap-2 mb-6">
-                  {job.skills.map((skill, idx) => (
-                    <Badge key={idx} variant="secondary" className="bg-blue-50 text-blue-700 hover:bg-blue-100">
-                      {skill}
-                    </Badge>
-                  ))}
                 </div>
 
                 {/* Apply Button */}
-                <Button className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-lg px-8 py-3">
+                <Button 
+                  className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-lg px-8 py-3"
+                  onClick={() => window.open(job.url, '_blank')}
+                >
                   Aplikuj teraz
                 </Button>
               </div>
             </div>
           </Card>
+
+          <div className="prose max-w-none mb-8">
+            <h2 className="text-xl font-semibold mb-4">Opis stanowiska</h2>
+            <p className="whitespace-pre-line">{job.job_description}</p>
+          </div>
 
           <div className="grid lg:grid-cols-3 gap-6">
             {/* Main Content */}
@@ -167,62 +152,13 @@ const JobDetails = () => {
               <Card className="p-6">
                 <h2 className="text-2xl font-bold text-gray-900 mb-4">Opis stanowiska</h2>
                 <div className="prose prose-gray max-w-none">
-                  <p className="text-gray-700 leading-relaxed whitespace-pre-line">{job.description}</p>
+                  <p className="text-gray-700 leading-relaxed whitespace-pre-line">{job.job_description}</p>
                 </div>
-              </Card>
-
-              {/* Requirements */}
-              <Card className="p-6">
-                <h2 className="text-2xl font-bold text-gray-900 mb-4">Wymagania</h2>
-                <ul className="space-y-2">
-                  {job.requirements.map((req, idx) => (
-                    <li key={idx} className="flex items-start gap-2">
-                      <div className="w-2 h-2 bg-blue-600 rounded-full mt-2 flex-shrink-0"></div>
-                      <span className="text-gray-700">{req}</span>
-                    </li>
-                  ))}
-                </ul>
-              </Card>
-
-              {/* Benefits */}
-              <Card className="p-6">
-                <h2 className="text-2xl font-bold text-gray-900 mb-4">Co oferujemy</h2>
-                <ul className="space-y-2">
-                  {job.benefits.map((benefit, idx) => (
-                    <li key={idx} className="flex items-start gap-2">
-                      <div className="w-2 h-2 bg-green-600 rounded-full mt-2 flex-shrink-0"></div>
-                      <span className="text-gray-700">{benefit}</span>
-                    </li>
-                  ))}
-                </ul>
               </Card>
             </div>
 
             {/* Sidebar */}
             <div className="space-y-6">
-              {/* Company Info */}
-              <Card className="p-6">
-                <h3 className="text-xl font-bold text-gray-900 mb-4">O firmie</h3>
-                <div className="space-y-3">
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Branża:</span>
-                    <span className="font-medium">{job.industry}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Wielkość:</span>
-                    <span className="font-medium">{job.companySize}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Lokalizacja:</span>
-                    <span className="font-medium">{job.location}</span>
-                  </div>
-                </div>
-                <Button variant="outline" className="w-full mt-4">
-                  <ExternalLink className="w-4 h-4 mr-2" />
-                  Zobacz profil firmy
-                </Button>
-              </Card>
-
               {/* Application Tips */}
               <Card className="p-6 bg-blue-50 border-blue-200">
                 <h3 className="text-lg font-bold text-blue-900 mb-3">💡 Wskazówki</h3>

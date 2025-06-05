@@ -20,11 +20,13 @@ const FiltersSidebar = () => {
 
   // Effect to update filters when debounced salary range changes
   useEffect(() => {
-    setFilters(prev => ({
-      ...prev,
-      salaryRange: debouncedSalaryRange
-    }));
-    console.log('Salary range updated after debounce:', debouncedSalaryRange);
+    if (debouncedSalaryRange[0] !== 5000 || debouncedSalaryRange[1] !== 20000) {  // Sprawdzamy czy to nie są wartości początkowe
+      setFilters(prev => ({
+        ...prev,
+        salaryRange: debouncedSalaryRange
+      }));
+      console.log('Salary range updated after debounce:', debouncedSalaryRange);
+    }
   }, [debouncedSalaryRange, setFilters]);
 
   const locations = [

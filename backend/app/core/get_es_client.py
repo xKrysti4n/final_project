@@ -1,15 +1,13 @@
-from elasticsearch import Elasticsearch
 import logging
 import time
+
+from elasticsearch import Elasticsearch
+
+
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.WARNING,format='[%(levelname)s] %(name)s: %(message)s')
 
 def get_client(max_attempts: int = 3, sleep_time: int = 3) -> Elasticsearch:
-    """Tworzenie clienta elasticsearch
-
-    Returns:
-        Elasticsearch: Klient Elasticsearch
-    """
     for attempt in range(1,max_attempts+1):
         try:
             client = Elasticsearch("http://localhost:9200")

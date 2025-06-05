@@ -1,74 +1,53 @@
-
 import React from 'react';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { MapPin, Clock, DollarSign, Heart, ExternalLink, Building } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { useSearch } from '@/contexts/SearchContext';
+import { searchJobs, Job } from '@/services/api';
+import { useQuery } from '@tanstack/react-query';
 
 const JobResults = () => {
-  const mockJobs = [
-    {
-      id: 1,
-      title: 'Senior Frontend Developer',
-      company: 'TechCorp',
-      location: 'Warszawa',
-      salary: '15,000 - 20,000 PLN',
-      type: 'Pełny etat',
-      remote: 'Hybrydowo',
-      posted: '2 dni temu',
-      logo: '🚀',
-      skills: ['React', 'TypeScript', 'Next.js'],
-      description: 'Szukamy doświadczonego Frontend Developera do zespołu...'
-    },
+  const { filters } = useSearch();
+  
+  const { data: jobs = [], isLoading, error } = useQuery({
+    queryKey: ['jobs', filters],
+    queryFn: () => searchJobs(filters),
+    staleTime: 5 * 60 * 1000,
+  });
 
-    {
-      id: 2,
-      title: 'Full Stack Engineer',
-      company: 'StartupXYZ',
-      location: 'Kraków',
-      salary: '12,000 - 18,000 PLN',
-      type: 'Pełny etat',
-      remote: 'Zdalnie',
-      posted: '1 dzień temu',
-      logo: '💡',
-      skills: ['Node.js', 'React', 'PostgreSQL'],
-      description: 'Dołącz do dynamicznego zespołu i buduj przyszłość...'
-    },
-    {
-      id: 3,
-      title: 'UI/UX Designer',
-      company: 'DesignStudio',
-      location: 'Gdańsk',
-      salary: '8,000 - 12,000 PLN',
-      type: 'Pełny etat',
-      remote: 'W biurze',
-      posted: '3 dni temu',
-      logo: '🎨',
-      skills: ['Figma', 'Adobe XD', 'Prototyping'],
-      description: 'Poszukujemy kreatywnego designera do projektowania...'
-    },
-    {
-      id: 4,
-      title: 'DevOps Engineer',
-      company: 'CloudTech',
-      location: 'Wrocław',
-      salary: '16,000 - 22,000 PLN',
-      type: 'Pełny etat',
-      remote: 'Hybrydowo',
-      posted: '5 dni temu',
-      logo: '☁️',
-      skills: ['AWS', 'Docker', 'Kubernetes'],
-      description: 'Szukamy eksperta DevOps do zarządzania infrastrukturą...'
-    }
-  ];
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="text-center text-red-600 p-4">
+        <p>{error instanceof Error ? error.message : 'Wystąpił nieznany błąd'}</p>
+      </div>
+    );
+  }
+
+  if (!Array.isArray(jobs)) {
+    console.error('Jobs is not an array:', jobs);
+    return (
+      <div className="text-center text-red-600 p-4">
+        <p>Nieprawidłowy format danych z serwera</p>
+      </div>
+    );
+  }
 
   return (
     <div>
       <div className="flex justify-between items-center mb-6">
         <div>
           <h2 className="text-2xl font-bold text-gray-900">
-            Znaleziono {mockJobs.length} ofert pracy
+            Znaleziono {jobs.length > 0 ? jobs[0].total_hits : 0} ofert pracy 
           </h2>
           <p className="text-gray-600 mt-1">Najlepsze oferty dopasowane do Twoich kryteriów</p>
         </div>
@@ -83,7 +62,7 @@ const JobResults = () => {
       </div>
 
       <div className="space-y-4">
-        {mockJobs.map((job) => (
+        {jobs.map((job) => (
           <Card key={job.id} className="p-6 hover:shadow-lg transition-all duration-200 border-2 border-gray-100 hover:border-blue-200 group">
             <div className="flex flex-col lg:flex-row gap-6">
               {/* Company Logo */}
@@ -99,7 +78,7 @@ const JobResults = () => {
                   <div>
                     <Link to={`/job/${job.id}`}>
                       <h3 className="text-xl font-bold text-gray-900 group-hover:text-blue-600 transition-colors cursor-pointer">
-                        {job.title}
+                        {job.job_title}
                       </h3>
                     </Link>
                     <div className="flex items-center gap-2 text-gray-600 mt-1">
@@ -125,31 +104,40 @@ const JobResults = () => {
                   </div>
                   <div className="flex items-center gap-1">
                     <DollarSign className="w-4 h-4" />
-                    <span className="font-medium text-green-600">{job.salary}</span>
+                    <span className="font-medium text-green-600">
+                      {job.salary_min.toLocaleString()} - {job.salary_max.toLocaleString()} PLN
+                    </span>
                   </div>
                   <div className="flex items-center gap-1">
                     <Clock className="w-4 h-4" />
-                    <span>{job.posted}</span>
+                    <span>{job.posted_date}</span>
                   </div>
                 </div>
 
-                {/* Skills */}
-                <div className="flex flex-wrap gap-2">
-                  {job.skills.map((skill, idx) => (
-                    <Badge key={idx} variant="secondary" className="bg-blue-50 text-blue-700 hover:bg-blue-100">
-                      {skill}
-                    </Badge>
-                  ))}
-                </div>
-
                 {/* Description */}
-                <p className="text-gray-700 line-clamp-2">{job.description}</p>
+                <p className="text-gray-700 line-clamp-2">{job.job_description}</p>
 
                 {/* Actions */}
                 <div className="flex gap-3 pt-2">
-                  <Button className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 flex-1 lg:flex-none">
-                    Aplikuj teraz
-                  </Button>
+                  {job.url ? (
+                    <a 
+                      href={job.url} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="inline-block"
+                    >
+                      <Button className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 flex-1 lg:flex-none">
+                        Aplikuj teraz
+                      </Button>
+                    </a>
+                  ) : (
+                    <Button 
+                      className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 flex-1 lg:flex-none"
+                      disabled
+                    >
+                      Aplikuj teraz
+                    </Button>
+                  )}
                   <Link to={`/job/${job.id}`}>
                     <Button variant="outline" size="sm">
                       <ExternalLink className="w-4 h-4 mr-2" />

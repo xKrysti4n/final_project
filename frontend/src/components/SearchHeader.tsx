@@ -5,7 +5,6 @@ import { Search, Plus } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useDebounce } from '@/hooks/useDebounce';
 import { useSearch } from '@/contexts/SearchContext';
-import { searchJobs } from '@/services/api';
 
 const SearchHeader = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -14,48 +13,21 @@ const SearchHeader = () => {
 
   const debouncedSearchQuery = useDebounce(searchQuery, 2000);
 
-  const performSearch = async (query: string) => {
-    try {
-      const results = await searchJobs({
-        searchQuery: query,
-        salaryRange: filters.salaryRange,
-        selectedLocations: filters.selectedLocations,
-        selectedJobTypes: filters.selectedJobTypes
-      });
-      console.log('Search results:', results);
-      // Here you can handle the results, e.g., update the job listings
-    } catch (error) {
-      console.error('Search failed:', error);
-    }
-  };
-
   // Effect for search query changes
   useEffect(() => {
-    console.log('Debounced search triggered:', debouncedSearchQuery);
-    setFilters(prev => ({ ...prev, searchQuery: debouncedSearchQuery }));
-    performSearch(debouncedSearchQuery);
-    if (debouncedSearchQuery.trim()) {
-      navigate(`/?search=${encodeURIComponent(debouncedSearchQuery.trim())}`);
+    if (debouncedSearchQuery !== undefined) {
+      console.log('Search query changed, updating filters');
+      setFilters(prev => ({ ...prev, searchQuery: debouncedSearchQuery }));
+      if (debouncedSearchQuery.trim()) {
+        navigate(`/?search=${encodeURIComponent(debouncedSearchQuery.trim())}`);
+      }
     }
   }, [debouncedSearchQuery, navigate, setFilters]);
 
-  // Effect for filter changes
-  useEffect(() => {
-    console.log('Filters changed, performing search');
-    performSearch(searchQuery);
-  }, [filters.salaryRange, filters.selectedLocations, filters.selectedJobTypes]);
-
-  // Effect for initial load
-  useEffect(() => {
-    console.log('Initial load, performing search');
-    performSearch('');
-  }, []); // Empty dependency array means this runs once on mount
-
-  const handleSearch = async (e: React.FormEvent) => {
+  const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     console.log('Immediate search triggered:', searchQuery);
     setFilters(prev => ({ ...prev, searchQuery }));
-    await performSearch(searchQuery);
     if (searchQuery.trim()) {
       navigate(`/?search=${encodeURIComponent(searchQuery.trim())}`);
     }
