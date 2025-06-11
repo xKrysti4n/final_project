@@ -1,5 +1,3 @@
-
-import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -7,28 +5,40 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ArrowLeft, Building2, MapPin, DollarSign, Clock } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { useState } from 'react';
+import { createNewJob, NewJobOffer } from '@/services/api';
+import { toast } from 'sonner';
 
 const AddJob = () => {
+  const navigate = useNavigate();
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
-    title: '',
-    company: '',
-    location: '',
-    salary: '',
-    jobType: '',
-    description: '',
-    requirements: '',
-    benefits: '',
-    email: ''
+    job_title: '',
+    company_name: '',
+    url: '',
+    job_description: '',
+    is_remote: false,
+    posted_date: new Date().toISOString().split('T')[0]
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Form submitted:', formData);
-    // Tutaj będzie logika wysyłania do backendu
+    setIsSubmitting(true);
+    
+    try {
+      await createNewJob(formData as NewJobOffer);
+      toast.success('Ogłoszenie zostało dodane pomyślnie!');
+      navigate('/');
+    } catch (error) {
+      toast.error('Wystąpił błąd podczas dodawania ogłoszenia');
+      console.error('Error submitting form:', error);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
-  const handleInputChange = (field: string, value: string) => {
+  const handleInputChange = (field: string, value: string | boolean) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
@@ -62,77 +72,55 @@ const AddJob = () => {
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="title">Nazwa stanowiska *</Label>
+                    <Label htmlFor="job_title">Nazwa stanowiska *</Label>
                     <Input
-                      id="title"
-                      value={formData.title}
-                      onChange={(e) => handleInputChange('title', e.target.value)}
+                      id="job_title"
+                      value={formData.job_title}
+                      onChange={(e) => handleInputChange('job_title', e.target.value)}
                       placeholder="np. Frontend Developer"
                       required
                     />
                   </div>
                   
                   <div className="space-y-2">
-                    <Label htmlFor="company">Nazwa firmy *</Label>
+                    <Label htmlFor="company_name">Nazwa firmy *</Label>
                     <Input
-                      id="company"
-                      value={formData.company}
-                      onChange={(e) => handleInputChange('company', e.target.value)}
+                      id="company_name"
+                      value={formData.company_name}
+                      onChange={(e) => handleInputChange('company_name', e.target.value)}
                       placeholder="np. Tech Solutions"
                       required
                     />
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="location" className="flex items-center gap-1">
-                      <MapPin className="w-4 h-4" />
-                      Lokalizacja *
-                    </Label>
-                    <Select onValueChange={(value) => handleInputChange('location', value)}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Wybierz lokalizację" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="warszawa">Warszawa</SelectItem>
-                        <SelectItem value="krakow">Kraków</SelectItem>
-                        <SelectItem value="gdansk">Gdańsk</SelectItem>
-                        <SelectItem value="wroclaw">Wrocław</SelectItem>
-                        <SelectItem value="poznan">Poznań</SelectItem>
-                        <SelectItem value="katowice">Katowice</SelectItem>
-                        <SelectItem value="lodz">Łódź</SelectItem>
-                        <SelectItem value="zdalnie">Zdalnie</SelectItem>
-                        <SelectItem value="hybrydowo">Hybrydowo</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="salary" className="flex items-center gap-1">
-                      <DollarSign className="w-4 h-4" />
-                      Zarobki (PLN)
-                    </Label>
+                    <Label htmlFor="url">URL ogłoszenia *</Label>
                     <Input
-                      id="salary"
-                      value={formData.salary}
-                      onChange={(e) => handleInputChange('salary', e.target.value)}
-                      placeholder="np. 8000-12000"
+                      id="url"
+                      value={formData.url}
+                      onChange={(e) => handleInputChange('url', e.target.value)}
+                      placeholder="https://..."
+                      required
                     />
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="jobType" className="flex items-center gap-1">
+                    <Label htmlFor="is_remote" className="flex items-center gap-1">
                       <Clock className="w-4 h-4" />
-                      Typ pracy *
+                      Praca zdalna
                     </Label>
-                    <Select onValueChange={(value) => handleInputChange('jobType', value)}>
+                    <Select 
+                      onValueChange={(value) => handleInputChange('is_remote', value === 'true')}
+                      value={formData.is_remote.toString()}
+                    >
                       <SelectTrigger>
                         <SelectValue placeholder="Wybierz typ" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="pelny-etat">Pełny etat</SelectItem>
-                        <SelectItem value="zdalnie">Zdalnie</SelectItem>
+                        <SelectItem value="true">Tak</SelectItem>
+                        <SelectItem value="false">Nie</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -144,51 +132,13 @@ const AddJob = () => {
                 <h2 className="text-xl font-semibold text-gray-900">Opis stanowiska</h2>
                 
                 <div className="space-y-2">
-                  <Label htmlFor="description">Opis pracy *</Label>
+                  <Label htmlFor="job_description">Opis pracy *</Label>
                   <Textarea
-                    id="description"
-                    value={formData.description}
-                    onChange={(e) => handleInputChange('description', e.target.value)}
+                    id="job_description"
+                    value={formData.job_description}
+                    onChange={(e) => handleInputChange('job_description', e.target.value)}
                     placeholder="Opisz zakres obowiązków, projekty, technologie..."
                     rows={4}
-                    required
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="requirements">Wymagania</Label>
-                  <Textarea
-                    id="requirements"
-                    value={formData.requirements}
-                    onChange={(e) => handleInputChange('requirements', e.target.value)}
-                    placeholder="Opisz wymagane umiejętności, doświadczenie..."
-                    rows={3}
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="benefits">Benefity</Label>
-                  <Textarea
-                    id="benefits"
-                    value={formData.benefits}
-                    onChange={(e) => handleInputChange('benefits', e.target.value)}
-                    placeholder="Opisz oferowane benefity..."
-                    rows={3}
-                  />
-                </div>
-              </div>
-
-              {/* Contact */}
-              <div className="space-y-4">
-                <h2 className="text-xl font-semibold text-gray-900">Kontakt</h2>
-                <div className="space-y-2">
-                  <Label htmlFor="email">Email kontaktowy *</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    value={formData.email}
-                    onChange={(e) => handleInputChange('email', e.target.value)}
-                    placeholder="kontakt@firma.pl"
                     required
                   />
                 </div>
@@ -200,8 +150,12 @@ const AddJob = () => {
                   <Link to="/">
                     <Button variant="outline">Anuluj</Button>
                   </Link>
-                  <Button type="submit" className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">
-                    Opublikuj ogłoszenie
+                  <Button 
+                    type="submit" 
+                    className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+                    disabled={isSubmitting}
+                  >
+                    {isSubmitting ? 'Dodawanie...' : 'Opublikuj ogłoszenie'}
                   </Button>
                 </div>
               </div>

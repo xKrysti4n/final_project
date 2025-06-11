@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { MapPin, Clock, DollarSign, Heart, ExternalLink, Building } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useSearch } from '@/contexts/SearchContext';
-import { searchJobs, Job } from '@/services/api';
+import { searchJobs, searchWithAI, Job, ApiAIHit } from '@/services/api';
 import { useQuery } from '@tanstack/react-query';
 
 const JobResults = () => {
@@ -13,7 +13,28 @@ const JobResults = () => {
   
   const { data: jobs = [], isLoading, error } = useQuery({
     queryKey: ['jobs', filters],
-    queryFn: () => searchJobs(filters),
+    queryFn: async () => {
+      if (filters.searchQuery && filters.searchQuery.includes('AI:')) {
+        const aiResults = await searchWithAI(filters.searchQuery.replace('AI:', '').trim());
+        return aiResults.hits.hits.map((hit: ApiAIHit) => ({
+          job_title: hit._source.job_title,
+          job_description: hit._source.job_description,
+          is_remote: hit._source.is_remote,
+          id: hit._id,
+          company: hit._source.company_name,
+          location: hit._source.job_location,
+          salary_min: 8000,
+          salary_max: 12000,
+          type: 'Pełny etat',
+          remote: hit._source.is_remote ? 'Zdalnie' : 'W biurze',
+          posted_date: hit._source.posted_date,
+          logo: ['🚀', '💡', '🎨', '☁️'][Math.floor(Math.random() * 4)],
+          total_hits: aiResults.hits.total.value,
+          url: hit._source.url
+        }));
+      }
+      return searchJobs(filters);
+    },
     staleTime: 5 * 60 * 1000,
   });
 

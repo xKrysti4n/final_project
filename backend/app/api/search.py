@@ -12,4 +12,3 @@ async def search(search_request: SearchRequest):
         return result
     except Exception as e:
         raise HTTPException(status_code=503,detail=str(e))
-

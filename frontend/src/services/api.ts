@@ -46,17 +46,16 @@ api.interceptors.request.use(
   }
 );
 
-// Add response interceptor for debugging
-// api.interceptors.response.use(
-//   (response) => {
-//     console.log('Response:', response);
-//     return response;
-//   },
-//   (error) => {
-//     console.error('Response Error:', error);
-//     return Promise.reject(error);
-//   }
-// );
+api.interceptors.response.use(
+  (response) => {
+    console.log('Response:', response);
+    return response;
+  },
+  (error) => {
+    console.error('Response Error:', error);
+    return Promise.reject(error);
+  }
+);
 
 export interface SearchFilters {
   searchQuery: string;
@@ -111,18 +110,19 @@ export interface Job {
 
 export const searchJobs = async (filters: SearchFilters): Promise<Job[]> => {
   try {
+    console.log('Sending search request with filters:', filters);
     const response = await api.post<ApiResponse>('/search', {
       query: filters.searchQuery || "",
       salary_min: filters.salaryRange[0],
       salary_max: filters.salaryRange[1],
-      locations: filters.selectedLocations,
-      job_types: filters.selectedJobTypes
+      locations: filters.selectedLocations || [],
+      job_types: filters.selectedJobTypes || [],
+      is_ai_search: false
     });
     console.log('Raw API response:', response.data);
     
     const totalHits = response.data.hits.total.value;
     
-    // Mapujemy odpowiedź z API i dodajemy mockowe dane
     return (response.data.hits.hits || []).map((hit, index) => ({
       job_title: hit._source.job_title,
       job_description: hit._source.job_description,
@@ -145,11 +145,30 @@ export const searchJobs = async (filters: SearchFilters): Promise<Job[]> => {
   }
 };
 
-export const searchWithAI = async (query: string) => {
+export interface ApiAIHit {
+  _id: string;
+  _score: number;
+  _source: ApiJobSource;
+}
+
+export interface ApiAIResponse {
+  hits: {
+    total: {
+      value: number;
+      relation: string;
+    };
+    hits: ApiAIHit[];
+  };
+}
+
+export const searchWithAI = async (query: string): Promise<ApiAIResponse> => {
   try {
-    const response = await api.post('/search-ai', {
-      query
+    console.log('Sending AI search request with query:', query);
+    const response = await api.post<ApiAIResponse>('/searchAI', {
+      query,
+      is_ai_search: true
     });
+    console.log('Raw AI search response:', response.data);
     return response.data;
   } catch (error) {
     console.error('Error with AI search:', error);
@@ -171,3 +190,23 @@ export const jobsApi = {
 
 export type { JobSource, JobResponse };
 export default api;
+
+
+export interface NewJobOffer {
+  job_title: string;
+  url: string;
+  posted_date: string;
+  job_description: string;
+  company_name: string;
+  is_remote: boolean;
+}
+
+export const createNewJob = async (jobData: NewJobOffer) => {
+  try {
+    const response = await axios.post(`${config.API_URL}${config.API_BASE_PATH}/new`, jobData);
+    return response.data;
+  } catch (error) {
+    console.error('Error creating new job:', error);
+    throw error;
+  }
+};

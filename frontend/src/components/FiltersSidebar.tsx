@@ -11,23 +11,21 @@ import { searchWithAI } from '@/services/api';
 
 const FiltersSidebar = () => {
   const { filters, setFilters } = useSearch();
-  // Separate state for AI search
-  const [aiSearch, setAiSearch] = useState('');
-  const [localSalaryRange, setLocalSalaryRange] = useState<[number, number]>([5000, 20000]);
+  const [localSalaryRange, setLocalSalaryRange] = useState<[number, number]>(filters.salaryRange);
+  const [aiSearchInput, setAiSearchInput] = useState('');
 
   // Debounce the salary range changes
   const debouncedSalaryRange = useDebounce(localSalaryRange, 1000);
 
   // Effect to update filters when debounced salary range changes
   useEffect(() => {
-    if (debouncedSalaryRange[0] !== 5000 || debouncedSalaryRange[1] !== 20000) {  // Sprawdzamy czy to nie są wartości początkowe
+    if (debouncedSalaryRange[0] !== filters.salaryRange[0] || debouncedSalaryRange[1] !== filters.salaryRange[1]) {
       setFilters(prev => ({
         ...prev,
         salaryRange: debouncedSalaryRange
       }));
-      console.log('Salary range updated after debounce:', debouncedSalaryRange);
     }
-  }, [debouncedSalaryRange, setFilters]);
+  }, [debouncedSalaryRange, setFilters, filters.salaryRange]);
 
   const locations = [
     'Warszawa', 'Kraków', 'Gdańsk', 'Wrocław', 'Poznań',
@@ -59,22 +57,40 @@ const FiltersSidebar = () => {
   };
 
   const handleAiSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    setAiSearch(value);
-    console.log('AI Search:', value);
+    setAiSearchInput(e.target.value);
   };
 
   const handleAiSearchSubmit = async () => {
-    if (aiSearch.trim()) {
+    if (aiSearchInput.trim()) {
       try {
-        console.log('Sending AI search query:', aiSearch);
-        const results = await searchWithAI(aiSearch);
+        setFilters(prev => ({
+          ...prev,
+          searchQuery: aiSearchInput
+        }));
+        const results = await searchWithAI(aiSearchInput);
         console.log('AI search results:', results);
-        // Here you can handle the results, e.g., update the job listings
       } catch (error) {
         console.error('AI search failed:', error);
       }
     }
+  };
+
+  const handleApplyFilters = () => {
+    setFilters(prev => ({
+      ...prev,
+      salaryRange: localSalaryRange
+    }));
+  };
+
+  const handleClearFilters = () => {
+    setFilters(prev => ({
+      ...prev,
+      salaryRange: [5000, 20000],
+      selectedLocations: [],
+      selectedJobTypes: []
+    }));
+    setLocalSalaryRange([5000, 20000]);
+    setAiSearchInput('');
   };
 
   return (
@@ -96,14 +112,14 @@ const FiltersSidebar = () => {
               <Input
                 type="text"
                 placeholder="Opisz jaką pracę szukasz..."
-                value={aiSearch}
+                value={aiSearchInput}
                 onChange={handleAiSearch}
                 className="border-2 border-gray-200 focus:border-purple-500 transition-colors"
               />
               <Button
                 onClick={handleAiSearchSubmit}
                 className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
-                disabled={!aiSearch.trim()}
+                disabled={!aiSearchInput.trim()}
               >
                 <Send className="w-4 h-4 mr-2" />
                 Wyszukaj z AI
@@ -183,14 +199,21 @@ const FiltersSidebar = () => {
         </div>
 
         <div className="flex justify-between items-center mt-6 pt-4 border-t border-gray-100">
-          <Button variant="outline" className="text-gray-600">
+          <Button 
+            variant="outline" 
+            className="text-gray-600"
+            onClick={handleClearFilters}
+          >
             Wyczyść filtry
           </Button>
           <div className="flex gap-2">
             <Button variant="outline">
               Zapisz wyszukiwanie
             </Button>
-            <Button className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">
+            <Button 
+              className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+              onClick={handleApplyFilters}
+            >
               Zastosuj filtry
             </Button>
           </div>
