@@ -10,4 +10,8 @@ class SearchAIRequest(BaseModel):
 @router.post("/searchAI", description="Search by embeddings")
 async def searchAI(request: SearchAIRequest):
     return searchAiService(request.query)
-    
+
+
+
+
+

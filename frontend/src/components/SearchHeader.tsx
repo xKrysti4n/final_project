@@ -13,7 +13,6 @@ const SearchHeader = () => {
 
   const debouncedSearchQuery = useDebounce(searchQuery, 2000);
 
-  // Effect for search query changes
   useEffect(() => {
     if (debouncedSearchQuery !== undefined) {
       console.log('Search query changed, updating filters');

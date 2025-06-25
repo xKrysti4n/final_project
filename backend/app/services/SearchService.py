@@ -41,15 +41,27 @@ def SearchService(request: SearchRequest):
                 "job_location.keyword": request.locations
             }
         })
-    if request.job_types == ["Zdalnie"]:
-        query["query"]["bool"]["filter"].append({
+
+    remote_mapping = {
+        "Zdalnie": True,
+        "Pełny etat": False
+    }
+    
+    if request.job_types:
+        remote_conditions = []
+        for job_type in request.job_types:
+            if job_type in remote_mapping:
+                remote_conditions.append({
             "term": {
-                "is_remote": True
+                        "is_remote": remote_mapping[job_type]
             }
         })
+        
+        if remote_conditions:
+            query["query"]["bool"]["should"].extend(remote_conditions)
+            query["query"]["bool"]["minimum_should_match"] = 1
     
-    # TODO Zrobić to
-
+    # # TODO Zrobić to
     # if request.salary_min:
     #     query['query']['bool']['must'].append({
     #         "range":{

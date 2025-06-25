@@ -17,7 +17,6 @@ const Index = () => {
           </div>
         </div>
       </div>
-      <AISearchModal />
     </div>
   );
 };

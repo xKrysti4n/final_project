@@ -17,7 +17,7 @@ def get_client(max_attempts: int = 3, sleep_time: int = 3) -> Elasticsearch:
             else:
                 logger.warning(f"Elasticsearch is not responding ({attempt}/{max_attempts})")
                 time.sleep(sleep_time)
-        except Exception as e:
+        except Exception:
             logger.warning(f"Failed to connect ({attempt}/{max_attempts})")
             time.sleep(sleep_time)
     raise ConnectionError("Could not connect to Elasticsearch after multiple attempts")

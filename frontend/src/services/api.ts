@@ -34,7 +34,7 @@ const api = axios.create({
   withCredentials: false
 });
 
-// Add request interceptor for debugging
+// DEBUG 
 api.interceptors.request.use(
   (config) => {
     console.log('Request:', config);
@@ -110,7 +110,7 @@ export interface Job {
 
 export const searchJobs = async (filters: SearchFilters): Promise<Job[]> => {
   try {
-    console.log('Sending search request with filters:', filters);
+    console.log('Sending search request:', filters);
     const response = await api.post<ApiResponse>('/search', {
       query: filters.searchQuery || "",
       salary_min: filters.salaryRange[0],

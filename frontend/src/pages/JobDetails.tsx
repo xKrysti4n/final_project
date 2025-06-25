@@ -11,15 +11,12 @@ import { jobsApi, type JobSource } from '@/services/api';
 
 const JobDetails = () => {
   const { id } = useParams();
-  const navigate = useNavigate();
   const [job, setJob] = useState<JobSource | null>(null);
-  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchJobDetails = async () => {
       try {
-        setLoading(true);
         setError(null);
         
         const response = await jobsApi.getJobDetails(id);
@@ -30,33 +27,19 @@ const JobDetails = () => {
       } catch (err) {
         console.error('Error fetching job details:', err);
         setError('Nie udało się pobrać szczegółów oferty. Spróbuj ponownie później.');
-      } finally {
-        setLoading(false);
       }
     };
 
     fetchJobDetails();
   }, [id]);
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-xl text-gray-600">Ładowanie szczegółów oferty...</div>
-      </div>
-    );
-  }
 
-  if (error || !job) {
+  if (!job) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center gap-4">
         <div className="text-xl text-red-600">{error || 'Nie znaleziono oferty'}</div>
-        <Button 
-          onClick={() => navigate('/')}
-          className="bg-blue-600 hover:bg-blue-700"
-        >
           <ArrowLeft className="w-4 h-4 mr-2" />
           Powrót do listy ofert
-        </Button>
       </div>
     );
   }

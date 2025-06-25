@@ -3,7 +3,6 @@ from app.core.get_es_client import get_client
 import json
 from elasticsearch.helpers import bulk
 from elasticsearch import Elasticsearch, exceptions
-from pprint import pprint
 from logging import getLogger
 logger = getLogger("INDEXING_OFFERS")
 logger.setLevel("INFO")

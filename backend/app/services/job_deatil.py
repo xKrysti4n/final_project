@@ -13,6 +13,7 @@ def job_details(job_id: int) -> dict:
                 "job_id": job_id
             }
         },
-    },size=1,
-    source=["job_title","job_description","url","job_location","posted_date"])
-    return job_detail_response
+        "_source": ["job_title","job_description","url","job_location","posted_date"],
+        "size": 1
+    })
+    return job_detail_response.body

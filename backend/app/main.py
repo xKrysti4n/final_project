@@ -17,9 +17,10 @@ app.add_middleware(
 )
 
 
+
 @app.get("/")
 async def root():
-    return {"message": "Welcome to the Job Offers API"}
+    return {"message": "Job Portal API "}
 
 app.include_router(info_router, prefix="/api/v1", tags=["info"])
 app.include_router(search_router, prefix="/api/v1", tags=["search"])
@@ -28,3 +29,4 @@ app.include_router(searchAI_router, prefix="/api/v1", tags=["search by AI"])
 app.include_router(index_new_job_router, prefix="/api/v1", tags=["index new job"])
 
 
+# uvicorn app.main:app --reload

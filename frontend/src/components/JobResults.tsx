@@ -84,7 +84,7 @@ const JobResults = () => {
 
       <div className="space-y-4">
         {jobs.map((job) => (
-          <Card key={job.id} className="p-6 hover:shadow-lg transition-all duration-200 border-2 border-gray-100 hover:border-blue-200 group">
+          <Card key={job.job_id} className="p-6 hover:shadow-lg transition-shadow">
             <div className="flex flex-col lg:flex-row gap-6">
               {/* Company Logo */}
               <div className="flex-shrink-0">

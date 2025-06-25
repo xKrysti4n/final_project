@@ -25,3 +25,10 @@ frontend/*.ntvs*
 frontend/*.njsproj
 frontend/*.sln
 frontend/*.sw?
+frontend/tailwind.config.ts
+frontend/eslint.config.js
+
+
+pyrightconfig.json
+.vscode
+pytest.ini

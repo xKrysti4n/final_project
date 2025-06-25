@@ -135,20 +135,6 @@ const SearchFilters = () => {
           </div>
         </div>
       </div>
-
-      <div className="flex justify-between items-center mt-6 pt-4 border-t border-gray-100">
-        <Button variant="outline" className="text-gray-600">
-          Wyczyść filtry
-        </Button>
-        <div className="flex gap-2">
-          <Button variant="outline">
-            Zapisz wyszukiwanie
-          </Button>
-          <Button className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">
-            Zastosuj filtry
-          </Button>
-        </div>
-      </div>
     </Card>
   );
 };
