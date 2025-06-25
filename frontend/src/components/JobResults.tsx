@@ -20,7 +20,7 @@ const JobResults = () => {
           job_title: hit._source.job_title,
           job_description: hit._source.job_description,
           is_remote: hit._source.is_remote,
-          id: hit._id,
+          id: hit._source.job_id,
           company: hit._source.company_name,
           location: hit._source.job_location,
           salary_min: 8000,
@@ -83,8 +83,8 @@ const JobResults = () => {
       </div>
 
       <div className="space-y-4">
-        {jobs.map((job) => (
-          <Card key={job.job_id} className="p-6 hover:shadow-lg transition-shadow">
+        {jobs.map((job, index) => (
+          <Card key={job.id || index} className="p-6 hover:shadow-lg transition-shadow">
             <div className="flex flex-col lg:flex-row gap-6">
               {/* Company Logo */}
               <div className="flex-shrink-0">

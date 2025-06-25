@@ -15,7 +15,7 @@ const SearchHeader = () => {
 
   useEffect(() => {
     if (debouncedSearchQuery !== undefined) {
-      console.log('Search query changed, updating filters');
+      console.log('Debounce');
       setFilters(prev => ({ ...prev, searchQuery: debouncedSearchQuery }));
       if (debouncedSearchQuery.trim()) {
         navigate(`/?search=${encodeURIComponent(debouncedSearchQuery.trim())}`);
@@ -25,7 +25,6 @@ const SearchHeader = () => {
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Immediate search triggered:', searchQuery);
     setFilters(prev => ({ ...prev, searchQuery }));
     if (searchQuery.trim()) {
       navigate(`/?search=${encodeURIComponent(searchQuery.trim())}`);
@@ -35,7 +34,6 @@ const SearchHeader = () => {
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setSearchQuery(value);
-    console.log('User typing:', value);
   };
 
   return (

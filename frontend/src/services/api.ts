@@ -26,7 +26,6 @@ const api = axios.create({
   headers: {
     'Content-Type': 'application/json',
     'Accept': 'application/json',
-    'Origin': window.location.origin,
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Methods': 'POST, GET, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type'
@@ -37,7 +36,7 @@ const api = axios.create({
 // DEBUG 
 api.interceptors.request.use(
   (config) => {
-    console.log('Request:', config);
+    console.log('Api request:', config.data);
     return config;
   },
   (error) => {
@@ -48,7 +47,7 @@ api.interceptors.request.use(
 
 api.interceptors.response.use(
   (response) => {
-    console.log('Response:', response);
+    console.log('Response:', response.data);
     return response;
   },
   (error) => {
@@ -110,7 +109,6 @@ export interface Job {
 
 export const searchJobs = async (filters: SearchFilters): Promise<Job[]> => {
   try {
-    console.log('Sending search request:', filters);
     const response = await api.post<ApiResponse>('/search', {
       query: filters.searchQuery || "",
       salary_min: filters.salaryRange[0],
@@ -119,7 +117,6 @@ export const searchJobs = async (filters: SearchFilters): Promise<Job[]> => {
       job_types: filters.selectedJobTypes || [],
       is_ai_search: false
     });
-    console.log('Raw API response:', response.data);
     
     const totalHits = response.data.hits.total.value;
     
