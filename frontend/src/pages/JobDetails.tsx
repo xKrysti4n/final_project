@@ -20,9 +20,6 @@ const JobDetails = () => {
         setError(null);
         
         const response = await jobsApi.getJobDetails(id);
-        if (!response.hits?.hits?.[0]?._source) {
-          throw new Error('Nie znaleziono szczegółów oferty');
-        }
         setJob(response.hits.hits[0]._source);
       } catch (err) {
         console.error('Error fetching job details:', err);
@@ -37,9 +34,7 @@ const JobDetails = () => {
   if (!job) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center gap-4">
-        <div className="text-xl text-red-600">{error || 'Nie znaleziono oferty'}</div>
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          Powrót do listy ofert
+        {/* Zrobic brak oferty */}
       </div>
     );
   }

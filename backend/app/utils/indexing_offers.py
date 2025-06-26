@@ -7,11 +7,6 @@ from logging import getLogger
 logger = getLogger("INDEXING_OFFERS")
 logger.setLevel("INFO")
 
-"""
-This module is responsible for indexing offers into Elasticsearch.
-It contains functions to create an index and bulk index documents.
-"""
-
 def index_data(documents: list[dict]) -> None:
     client = get_client()
     try:

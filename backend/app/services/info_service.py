@@ -2,12 +2,6 @@ from app.core.get_es_client import get_client
 from fastapi import HTTPException
 from app.schemas.info import InfoResponse
 def get_info() -> InfoResponse:
-    """
-    Retrieve information about the Elasticsearch cluster.
-
-    Returns:
-        dict: Information about the Elasticsearch cluster.
-    """
     try:
         client = get_client()
     except Exception as e:

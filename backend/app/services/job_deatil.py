@@ -1,4 +1,3 @@
-import pprint
 from app.core.get_es_client import get_client
 from app.core.config import INDEX_NAME
 from pprint import pprint

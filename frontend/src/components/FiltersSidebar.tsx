@@ -14,10 +14,8 @@ const FiltersSidebar = () => {
   const [localSalaryRange, setLocalSalaryRange] = useState<[number, number]>(filters.salaryRange);
   const [aiSearchInput, setAiSearchInput] = useState('');
 
-  // Debounce the salary range changes
+  // TODO Debounce 
   const debouncedSalaryRange = useDebounce(localSalaryRange, 1000);
-
-  // Effect to update filters when debounced salary range changes
   useEffect(() => {
     if (debouncedSalaryRange[0] !== filters.salaryRange[0] || debouncedSalaryRange[1] !== filters.salaryRange[1]) {
       setFilters(prev => ({

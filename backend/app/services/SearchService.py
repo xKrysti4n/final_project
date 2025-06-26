@@ -29,9 +29,8 @@ def SearchService(request: SearchRequest):
         })
         query["query"]["bool"]["should"].append({
             "match": {
-                "job_desciption":{
+                "job_description":{
                     "query": request.query,
-                    
                 }
             }
         })
@@ -48,18 +47,19 @@ def SearchService(request: SearchRequest):
     }
     
     if request.job_types:
-        remote_conditions = []
-        for job_type in request.job_types:
-            if job_type in remote_mapping:
-                remote_conditions.append({
-            "term": {
-                        "is_remote": remote_mapping[job_type]
-            }
-        })
-        
-        if remote_conditions:
-            query["query"]["bool"]["should"].extend(remote_conditions)
-            query["query"]["bool"]["minimum_should_match"] = 1
+        if set(remote_mapping.keys()).issubset(set(request.job_types)):
+            pass  
+        else:
+            remote_conditions = []
+            for job_type in request.job_types:
+                if job_type in remote_mapping:
+                    remote_conditions.append({
+                        "term": {
+                            "is_remote": remote_mapping[job_type]
+                        }
+                    })
+            if remote_conditions:
+                query["query"]["bool"]["must"].extend(remote_conditions)
     
     # # TODO Zrobić to
     # if request.salary_min:

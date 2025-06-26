@@ -27,8 +27,8 @@ const api = axios.create({
     'Content-Type': 'application/json',
     'Accept': 'application/json',
     'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Methods': 'POST, GET, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type'
+    'Access-Control-Allow-Methods': '*',
+    'Access-Control-Allow-Headers': '*'
   },
   withCredentials: false
 });
